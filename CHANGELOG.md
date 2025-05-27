@@ -15,3 +15,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Single file directory baking option
 
 
+[0.1.0]: https://github.com/KDesp73/baker/releases/tag/v0.1.0
+
