@@ -1,13 +1,10 @@
-#include "files.h"
 #include "baker.h"
-#include <bits/getopt_core.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define CLI_IMPLEMENTATION
 #include "extern/cli.h"
 #include "extern/defer.h"
-#include "version.h"
 
 
 int main(int argc, char** argv)
@@ -33,7 +30,7 @@ int main(int argc, char** argv)
                 cli_help(args, "baker <PATH> [<OPTIONS>...]", "Written by KDesp73");
                 exit(0);
             case 'v':
-                printf("baker v%s\n", VERSION_STRING);
+                printf("baker v%s\n", BAKER_VERSION);
                 exit(0);
             case 'H':
                 h_out = optarg;

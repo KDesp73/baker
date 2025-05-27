@@ -1,13 +1,7 @@
-#ifndef FILES_H
-#define FILES_H
+#include "baker.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
-#include <sys/stat.h>
 
-static inline int write_file_bytes(const char *path, const unsigned char *data, size_t size)
+int write_file_bytes(const char *path, const unsigned char *data, size_t size)
 {
     FILE *f = fopen(path, "wb");
     if (!f) return 0;
@@ -17,7 +11,7 @@ static inline int write_file_bytes(const char *path, const unsigned char *data, 
     return written == size;
 }
 
-static inline unsigned char* read_file_bytes(const char *path, size_t *size)
+unsigned char* read_file_bytes(const char *path, size_t *size)
 {
     FILE *f = fopen(path, "rb");
     if (!f) return NULL;
@@ -37,7 +31,7 @@ static inline unsigned char* read_file_bytes(const char *path, size_t *size)
     return data;
 }
 
-static inline char *replace_ext(const char *filename, const char *new_ext)
+char *replace_ext(const char *filename, const char *new_ext)
 {
     const char *dot = strrchr(filename, '.');
     size_t base_len;
@@ -59,7 +53,7 @@ static inline char *replace_ext(const char *filename, const char *new_ext)
     return result;
 }
 
-static inline char *extract_filename(const char *path)
+char *extract_filename(const char *path)
 {
     const char *slash1 = strrchr(path, '/');   // Unix-like
     const char *slash2 = strrchr(path, '\\');  // Windows
@@ -68,7 +62,7 @@ static inline char *extract_filename(const char *path)
     return last_sep ? (char *)(last_sep + 1) : (char *)path;
 }
 
-static inline char *move_to_dir(const char *filepath, const char *new_dir)
+char *move_to_dir(const char *filepath, const char *new_dir)
 {
     const char *filename = extract_filename(filepath);
 
@@ -86,16 +80,15 @@ static inline char *move_to_dir(const char *filepath, const char *new_dir)
     return result;
 }
 
-static inline bool is_file(const char* path) 
+bool is_file(const char* path) 
 {
     struct stat st;
     return (stat(path, &st) == 0) && S_ISREG(st.st_mode);
 }
 
-static inline bool is_directory(const char* path) 
+bool is_directory(const char* path) 
 {
     struct stat st;
     return (stat(path, &st) == 0) && S_ISDIR(st.st_mode);
 }
 
-#endif // FILES_H
