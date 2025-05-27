@@ -1,5 +1,7 @@
+#include "files.h"
 #include "writer.h"
 #include <stdio.h>
+#include <stdlib.h>
 #define CLI_IMPLEMENTATION
 #include "extern/cli.h"
 #include "extern/defer.h"
@@ -35,6 +37,8 @@ int main(int argc, char** argv)
     }
 
     BakeOptions bakeopts = DefaultOpts(path);
+    ModifyOutput(bakeopts, h_out, ".h", "include");
+    ModifyOutput(bakeopts, c_out, ".c", "src");
     BakeFile(&bakeopts);
 
     printf("Baked %s into %s %s as symbol '%s'\n", bakeopts.input, bakeopts.c_out, bakeopts.h_out, bakeopts.symbol);

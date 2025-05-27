@@ -48,6 +48,8 @@ void BakeFile(BakeOptions* opts)
         return;
     }
 
+    const char *input_filename = extract_filename(opts->input);
+
     FILE *hout = fopen(opts->h_out, "w");
     FILE *cout = fopen(opts->c_out, "w");
 
@@ -55,8 +57,9 @@ void BakeFile(BakeOptions* opts)
     fprintf(hout, "#include <stddef.h>\n\n");
     fprintf(hout, "extern const unsigned char %s[%zu];\n", opts->symbol, size);
     fprintf(hout, "extern const size_t %s_len;\n", opts->symbol);
+    fprintf(hout, "extern const char *%s_name;\n", opts->symbol);
 
-    fprintf(cout, "#include \"%s\"\n\n", opts->h_out);
+    fprintf(cout, "#include \"%s\"\n\n", extract_filename(opts->h_out));
     fprintf(cout, "const unsigned char %s[%zu] = {", opts->symbol, size);
     for (size_t i = 0; i < size; i++) {
         if (i % 12 == 0) fprintf(cout, "\n    ");
@@ -64,6 +67,7 @@ void BakeFile(BakeOptions* opts)
     }
     fprintf(cout, "\n};\n");
     fprintf(cout, "const size_t %s_len = %zu;\n", opts->symbol, size);
+    fprintf(cout, "const char *%s_name = \"%s\";\n", opts->symbol, input_filename);
 
     fclose(hout);
     fclose(cout);
