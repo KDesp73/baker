@@ -3,7 +3,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <sys/stat.h>
 
 static inline int write_file_bytes(const char *path, const unsigned char *data, size_t size)
 {
@@ -82,6 +84,18 @@ static inline char *move_to_dir(const char *filepath, const char *new_dir)
     strcat(result, filename);
 
     return result;
+}
+
+static inline bool is_file(const char* path) 
+{
+    struct stat st;
+    return (stat(path, &st) == 0) && S_ISREG(st.st_mode);
+}
+
+static inline bool is_directory(const char* path) 
+{
+    struct stat st;
+    return (stat(path, &st) == 0) && S_ISDIR(st.st_mode);
 }
 
 #endif // FILES_H

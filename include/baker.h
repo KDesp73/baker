@@ -1,5 +1,5 @@
-#ifndef WRITER_H
-#define WRITER_H
+#ifndef BAKER_H
+#define BAKER_H
 
 typedef struct {
     char* input;
@@ -20,5 +20,6 @@ void BakeOptionsFree(BakeOptions* opts);
 
 void BakeFile(BakeOptions* opts);
 
+void BakeDirectory(const char *input_dir, BakeOptions *opts);
 
-#endif // WRITER_H
+#endif // BAKER_H

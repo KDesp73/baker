@@ -1,8 +1,10 @@
-#include "writer.h"
+#include "baker.h"
 #include "files.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
+#include <sys/stat.h>
 
 static void sanitize_symbol(const char *filename, char *symbol)
 {
@@ -72,4 +74,71 @@ void BakeFile(BakeOptions* opts)
     fclose(hout);
     fclose(cout);
     free(data);
+}
+
+
+static void sanitize(char *s)
+{
+    for (; *s; s++) {
+        if (*s == '/' || *s == '.' || *s == '-') *s = '_';
+    }
+}
+
+static void walk_and_bake(const char *base_dir, const char *rel_path, BakeOptions *opts)
+{
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/%s", base_dir, rel_path);
+
+    DIR *dir = opendir(path);
+    if (!dir) {
+        perror("opendir");
+        return;
+    }
+
+    struct dirent *entry;
+    while ((entry = readdir(dir))) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) continue;
+
+        char next_rel[1024];
+        snprintf(next_rel, sizeof(next_rel), "%s/%s", rel_path, entry->d_name);
+
+        char full_path[1024];
+        snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, next_rel);
+
+        struct stat st;
+        if (stat(full_path, &st) != 0) continue;
+
+        if (S_ISDIR(st.st_mode)) {
+            walk_and_bake(base_dir, next_rel, opts);
+        } else if (S_ISREG(st.st_mode)) {
+            char *symbol = strdup(next_rel);
+            sanitize(symbol);
+
+            BakeOptions local = *opts;
+            local.input = strdup(full_path);
+            local.symbol = symbol;
+
+            char *tmp_h = replace_ext(entry->d_name, ".h");
+            char *tmp_c = replace_ext(entry->d_name, ".c");
+
+            local.h_out = move_to_dir(tmp_h, opts->h_out);
+            local.c_out = move_to_dir(tmp_c, opts->c_out);
+
+            BakeFile(&local);
+
+            free(local.input);
+            free(local.symbol);
+            free(local.h_out);
+            free(local.c_out);
+            free(tmp_h);
+            free(tmp_c);
+        }
+    }
+
+    closedir(dir);
+}
+
+void BakeDirectory(const char *input_dir, BakeOptions *opts)
+{
+    walk_and_bake(input_dir, "", opts);
 }
