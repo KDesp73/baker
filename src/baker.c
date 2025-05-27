@@ -142,3 +142,94 @@ void BakeDirectory(const char *input_dir, BakeOptions *opts)
 {
     walk_and_bake(input_dir, "", opts);
 }
+
+void BakeDirectorySingle(const char *input_dir, BakeOptions* opts)
+{
+    char h_path[1024], c_path[1024];
+    snprintf(h_path, sizeof(h_path), "%s/%s.h", opts->h_out, input_dir);
+    snprintf(c_path, sizeof(c_path), "%s/%s.c", opts->c_out, input_dir);
+
+    FILE *hout = fopen(h_path, "w");
+    FILE *cout = fopen(c_path, "w");
+    if (!hout || !cout) {
+        perror("fopen");
+        return;
+    }
+
+    fprintf(hout, "#pragma once\n\n");
+    fprintf(hout, "#include <stddef.h>\n\n");
+    fprintf(hout, "typedef struct {\n    const char *name;\n    const unsigned char *data;\n    size_t size;\n} BakedAsset;\n\n");
+    fprintf(hout, "extern const BakedAsset baked_assets[];\n");
+    fprintf(hout, "extern const size_t baked_assets_count;\n");
+
+    fprintf(cout, "#include \"%s.h\"\n\n", input_dir);
+
+    char **symbols = NULL;
+    char **names = NULL;
+    size_t *sizes = NULL;
+    size_t file_count = 0;
+
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd), "find %s -type f", input_dir);
+    FILE *pipe = popen(cmd, "r");
+    if (!pipe) {
+        perror("popen");
+        fclose(hout);
+        fclose(cout);
+        return;
+    }
+
+    char filepath[1024];
+    while (fgets(filepath, sizeof(filepath), pipe)) {
+        filepath[strcspn(filepath, "\n")] = 0;
+
+        size_t size;
+        unsigned char *data = read_file_bytes(filepath, &size);
+        if (!data) {
+            fprintf(stderr, "Failed to read %s\n", filepath);
+            continue;
+        }
+
+        char *symbol_full = strdup(filepath + strlen(input_dir));
+        char *symbol = symbol_full;
+        if (symbol[0] == '/' || symbol[0] == '\\') symbol++;
+        sanitize(symbol);
+
+        fprintf(cout, "static const unsigned char %s[%zu] = {", symbol, size);
+        for (size_t i = 0; i < size; i++) {
+            if (i % 12 == 0) fprintf(cout, "\n    ");
+            fprintf(cout, "0x%02X,", data[i]);
+        }
+        fprintf(cout, "\n};\n");
+        fprintf(cout, "static const size_t %s_len = %zu;\n\n", symbol, size);
+
+        symbols = realloc(symbols, sizeof(char*) * (file_count + 1));
+        names   = realloc(names, sizeof(char*) * (file_count + 1));
+        sizes   = realloc(sizes, sizeof(size_t) * (file_count + 1));
+
+        symbols[file_count] = strdup(symbol);
+        names[file_count] = strdup(filepath + strlen(input_dir) + 1);
+        sizes[file_count] = size;
+        file_count++;
+
+        free(symbol_full);
+        free(data);
+    }
+    pclose(pipe);
+
+    fprintf(cout, "const BakedAsset baked_assets[] = {\n");
+    for (size_t i = 0; i < file_count; i++) {
+        fprintf(cout, "    {\"%s\", %s, %zu},\n", names[i], symbols[i], sizes[i]);
+        free(symbols[i]);
+        free(names[i]);
+    }
+    fprintf(cout, "};\n");
+    fprintf(cout, "const size_t baked_assets_count = %zu;\n", file_count);
+
+    free(symbols);
+    free(names);
+    free(sizes);
+
+    fclose(hout);
+    fclose(cout);
+}

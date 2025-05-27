@@ -1,6 +1,7 @@
 #include "files.h"
 #include "baker.h"
 #include <bits/getopt_core.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #define CLI_IMPLEMENTATION
@@ -16,12 +17,14 @@ int main(int argc, char** argv)
         cli_arg_new('v', "version", "Prints the current version and exits", no_argument), 
         cli_arg_new('H', "h-out", "Specify the header output directory", required_argument),
         cli_arg_new('C', "c-out", "Specify the source output directory", required_argument),
+        cli_arg_new('s', "single", "Bake a directory of assets into a single .c/.h pair", no_argument),
         NULL
     );
     defer { cli_args_free(&args); }
 
     char* h_out = NULL;
     char* c_out = NULL;
+    bool single = false;
 
     int opt;
     LOOP_ARGS(opt, args) {
@@ -37,6 +40,9 @@ int main(int argc, char** argv)
                 break;
             case 'C':
                 c_out = optarg;
+                break;
+            case 's':
+                single = true;
                 break;
             default:
                 exit(1);
@@ -63,7 +69,9 @@ int main(int argc, char** argv)
             .c_out = (c_out) ? c_out : "src",
         };
 
-        BakeDirectory(path, &bakeopts);
+        (single)
+            ? BakeDirectorySingle(path, &bakeopts)
+            : BakeDirectory(path, &bakeopts);
     }
 
     exit(0);

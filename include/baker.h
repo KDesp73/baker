@@ -21,5 +21,6 @@ void BakeOptionsFree(BakeOptions* opts);
 void BakeFile(BakeOptions* opts);
 
 void BakeDirectory(const char *input_dir, BakeOptions *opts);
+void BakeDirectorySingle(const char *input_dir, BakeOptions* opts);
 
 #endif // BAKER_H
