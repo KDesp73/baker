@@ -1,1 +1,26 @@
 # baker 
+
+An asset baking cli tool and library
+
+## Get started
+
+```bash
+git clone http://github.com/KDesp73/baker && cd baker
+make all
+```
+
+## Single file baking
+
+```bash
+baker ./image.png -H ./include/assets -C src/assets
+```
+
+## Directory baking
+
+```bash
+baker assets/ # -s for baking all assets into a single file
+```
+
+## License
+
+[MIT](./LICENSE)
