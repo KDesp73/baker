@@ -66,7 +66,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c ## Compile source files with progress
 
 $(TARGET): $(BUILD_DIR) static ## Build executable using static library
 	@echo "[INFO] Building executable: $(TARGET)"
-	@$(CC) src/main.c -o $(TARGET) -L. -l:$(A_NAME) $(LDFLAGS) $(INCLUDE)
+	@$(CC) src/main.c -o $(TARGET) -L. -l:$(A_NAME) $(LDFLAGS) -Iinclude
 
 .PHONY: shared
 shared: $(BUILD_DIR) $(OBJ_FILES) ## Build shared library
