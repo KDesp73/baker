@@ -1,5 +1,4 @@
-# baker 
-![logo](https://github.com/user-attachments/assets/1649706d-df41-4242-84c4-1667442d7537)
+# <img src="https://github.com/user-attachments/assets/1649706d-df41-4242-84c4-1667442d7537" width=250>
 
 An asset baking cli tool and library
 
